@@ -27,11 +27,18 @@ struct allocator_header {
 	mem_fit_function_t* fit;
 };
 
+
 /* La seule variable globale autorisée
  * On trouve à cette adresse le début de la zone à gérer
  * (et une structure 'struct allocator_header)
  */
 static void* memory_addr;
+
+struct fb* get_head()
+{
+	return memory_addr + sizeof(struct allocator_header);
+};
+
 
 static inline void *get_system_memory_addr() {
 	return memory_addr;
@@ -77,16 +84,22 @@ void mem_init(void* mem, size_t taille)
 	mem_fit(&mem_fit_first);
 
 	//Création d'un unique bloc de mémoire libre contenant toute la mémoire disponible
-	struct fb* head = memory_addr + sizeof(struct allocator_header);
+	struct fb* head = get_head();
 	head->next = NULL;
 	head->size = taille - sizeof(struct allocator_header) - sizeof(struct fb);
 }
 
 void mem_show(void (*print)(void *, size_t, int)) {
-	struct fb* block = memory_addr + sizeof(struct allocator_header);
-	while (hasNext(block)) {
-		print(block, block->size, block->size == get );
-		block = getNext(block);
+	void* currentAddr = get_head();
+	struct fb* block = currentAddr;
+	struct fb* freeb = get_head();
+	while (currentAddr < (void*)(get_head() + get_header()->memory_size)) {
+		print(block, block->size, freeb == currentAddr);
+		if(hasNext(freeb))
+			if (freeb == currentAddr)
+				freeb = getNext(freeb);
+
+		currentAddr += block->size + sizeof(struct fb);
 	}
 }
 
@@ -108,7 +121,7 @@ void mem_free(void* mem) {
 
 
 struct fb* mem_fit_first(struct fb *list, size_t size) {
-	return NULL;
+		
 }
 
 /* Fonction à faire dans un second temps
