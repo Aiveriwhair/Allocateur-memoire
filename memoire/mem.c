@@ -1,6 +1,6 @@
 /* On inclut l'interface publique */
 #include "mem.h"
-#include<malloc_stub.h>
+#include"malloc_stub.h"
 #include <assert.h>
 #include <stddef.h>
 #include <string.h>
@@ -27,20 +27,6 @@ struct allocator_header {
 	mem_fit_function_t* fit;
 };
 
-static int hasNext(struct fb* block)
-{
-	if (block->next)
-	{
-		return 1;
-	}
-	return 0;
-}
-
-static struct fb* getNext(struct fb* block)
-{
-	return block->next;
-}
-
 /* La seule variable globale autorisée
  * On trouve à cette adresse le début de la zone à gérer
  * (et une structure 'struct allocator_header)
@@ -61,17 +47,20 @@ static inline size_t get_system_memory_size() {
 	return get_header()->memory_size;
 }
 
-
 struct fb {
 	size_t size;
 	struct fb* next;
-	int allocated;
 };
 
-// struct fb* get_head(){
-// 	return memory_addr + sizeof(struct allocator_header);
-// }
+int hasNext(struct fb* block)
+{
+	return block->next != NULL ? 1 : 0;
+}
 
+struct fb* getNext(struct fb* block)
+{
+	return block->next;
+}
 
 void mem_init(void* mem, size_t taille)
 {
@@ -91,13 +80,12 @@ void mem_init(void* mem, size_t taille)
 	struct fb* head = memory_addr + sizeof(struct allocator_header);
 	head->next = NULL;
 	head->size = taille - sizeof(struct allocator_header) - sizeof(struct fb);
-	head->allocated = 1;
 }
 
 void mem_show(void (*print)(void *, size_t, int)) {
 	struct fb* block = memory_addr + sizeof(struct allocator_header);
 	while (hasNext(block)) {
-		print(block, block->size, block->allocated);
+		print(block, block->size, block->size == get );
 		block = getNext(block);
 	}
 }
