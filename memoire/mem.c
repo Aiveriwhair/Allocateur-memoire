@@ -1,6 +1,6 @@
 /* On inclut l'interface publique */
 #include "mem.h"
-
+#include<malloc_stub.h>
 #include <assert.h>
 #include <stddef.h>
 #include <string.h>
@@ -12,7 +12,7 @@
 #ifdef __BIGGEST_ALIGNMENT__
 #define ALIGNMENT __BIGGEST_ALIGNMENT__
 #else
-#define ALIGNMENT 16
+#define ALIGNMENT 16ss
 #endif
 
 /* structure placée au début de la zone de l'allocateur
@@ -23,9 +23,23 @@
    Elle peut bien évidemment être complétée
 */
 struct allocator_header {
-        size_t memory_size;
-	mem_fit_function_t *fit;
+    size_t memory_size;
+	mem_fit_function_t* fit;
 };
+
+static int hasNext(struct fb* block)
+{
+	if (block->next)
+	{
+		return 1;
+	}
+	return 0;
+}
+
+static struct fb* getNext(struct fb* block)
+{
+	return block->next;
+}
 
 /* La seule variable globale autorisée
  * On trouve à cette adresse le début de la zone à gérer
@@ -51,29 +65,40 @@ static inline size_t get_system_memory_size() {
 struct fb {
 	size_t size;
 	struct fb* next;
-	/* ... */
+	int allocated;
 };
+
+// struct fb* get_head(){
+// 	return memory_addr + sizeof(struct allocator_header);
+// }
 
 
 void mem_init(void* mem, size_t taille)
 {
-        memory_addr = mem;
-        *(size_t*)memory_addr = taille;
+    memory_addr = mem;
+    *(size_t*)memory_addr = taille;
+
 	/* On vérifie qu'on a bien enregistré les infos et qu'on
 	 * sera capable de les récupérer par la suite
 	 */
 	assert(mem == get_system_memory_addr());
 	assert(taille == get_system_memory_size());
-	/* ... */
+
+	//On définit la fonction fit à utiliser
 	mem_fit(&mem_fit_first);
+
+	//Création d'un unique bloc de mémoire libre contenant toute la mémoire disponible
+	struct fb* head = memory_addr + sizeof(struct allocator_header);
+	head->next = NULL;
+	head->size = taille - sizeof(struct allocator_header) - sizeof(struct fb);
+	head->allocated = 1;
 }
 
 void mem_show(void (*print)(void *, size_t, int)) {
-	/* ... */
-	while (/* ... */ 0) {
-		/* ... */
-		print(/* ... */NULL, /* ... */0, /* ... */0);
-		/* ... */
+	struct fb* block = memory_addr + sizeof(struct allocator_header);
+	while (hasNext(block)) {
+		print(block, block->size, block->allocated);
+		block = getNext(block);
 	}
 }
 
@@ -112,6 +137,7 @@ size_t mem_get_size(void *zone) {
 	 * l'utilisateur peut utiliser dans cette zone */
 	return 0;
 }
+
 
 /* Fonctions facultatives
  * autres stratégies d'allocation
