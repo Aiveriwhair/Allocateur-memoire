@@ -98,7 +98,6 @@ void mem_show(void (*print)(void *, size_t, int)) {
 		if(hasNext(freeb))
 			if (freeb == currentAddr)
 				freeb = getNext(freeb);
-
 		currentAddr += block->size + sizeof(struct fb);
 	}
 }
@@ -108,20 +107,55 @@ void mem_fit(mem_fit_function_t *f) {
 }
 
 void *mem_alloc(size_t taille) {
-	/* ... */
+
+
 	__attribute__((unused)) /* juste pour que gcc compile ce squelette avec -Werror */
-	struct fb *fb=get_header()->fit(/*...*/NULL, /*...*/0);
-	/* ... */
-	return NULL;
+	struct fb* fb = get_header()->fit(get_head(), taille);
+	fb->size = taille;
+	fb->next = fb + taille + sizeof(struct fb);
+	return fb + sizeof(struct fb);
 }
 
 
+// struct fb* findPrevFb(void* mem)
+// {
+// 	struct fb* searchedBloc = mem;
+// 	struct fb* block = get_head();
+// 	struct fb* lastfb;
+// 	while (hasNext(block) && getNext(block) != )
+// 	{
+// 		block = getNext(block);
+// 		if block->
+// 	}
+	
+// }
+
 void mem_free(void* mem) {
+	// struct fb* list = get_head();
+	// struct fb* lastfb = findPrevFb(mem);
+	// 	if(hasNext(freeb))
+	// 		if (freeb == currentAddr)
+	// 			freeb = getNext(freeb);
 }
 
 
 struct fb* mem_fit_first(struct fb *list, size_t size) {
-		
+	
+	struct fb* block = list;
+	do
+	{
+		if (block->size >= size + sizeof(struct fb))
+		{
+			return block;
+		}
+		if (hasNext(block))
+		{
+			block = getNext(block);
+		}
+
+	} while (block != NULL);
+
+	return NULL;
 }
 
 /* Fonction à faire dans un second temps
