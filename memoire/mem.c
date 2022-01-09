@@ -71,22 +71,24 @@ struct fb* getNext(struct fb* block)
 
 void mem_init(void* mem, size_t taille)
 {
-    memory_addr = mem;
-    *(size_t*)memory_addr = taille;
+
+	memory_addr = mem;
+	*(size_t*)memory_addr = taille;
+
+	//On définit la fonction fit à utiliser
+	mem_fit(&mem_fit_first);
+	
+	get_header()->memory_size = taille;
+
+	//Création d'un unique bloc de mémoire libre contenant toute la mémoire disponible
+	get_head()->next = NULL;
+	get_head()->size = taille - sizeof(struct allocator_header) - sizeof(struct fb);
 
 	/* On vérifie qu'on a bien enregistré les infos et qu'on
 	 * sera capable de les récupérer par la suite
 	 */
 	assert(mem == get_system_memory_addr());
 	assert(taille == get_system_memory_size());
-
-	//On définit la fonction fit à utiliser
-	mem_fit(&mem_fit_first);
-
-	//Création d'un unique bloc de mémoire libre contenant toute la mémoire disponible
-	struct fb* head = get_head();
-	head->next = NULL;
-	head->size = taille - sizeof(struct allocator_header) - sizeof(struct fb);
 }
 
 void mem_show(void (*print)(void *, size_t, int)) {
