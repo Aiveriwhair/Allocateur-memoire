@@ -25,6 +25,7 @@
 struct allocator_header {
     size_t memory_size;
 	mem_fit_function_t* fit;
+	struct fb* first;
 };
 
 
@@ -57,6 +58,7 @@ static inline size_t get_system_memory_size() {
 struct fb {
 	size_t size;
 	struct fb* next;
+	int isFree;
 };
 
 int hasNext(struct fb* block)
@@ -77,12 +79,14 @@ void mem_init(void* mem, size_t taille)
 
 	//On définit la fonction fit à utiliser
 	mem_fit(&mem_fit_first);
-	
+
 	get_header()->memory_size = taille;
+	
 
 	//Création d'un unique bloc de mémoire libre contenant toute la mémoire disponible
-	get_head()->next = NULL;
-	get_head()->size = taille - sizeof(struct allocator_header) - sizeof(struct fb);
+	get_header()->first->next = NULL;
+	get_header()->first->size = taille - sizeof(struct allocator_header) - sizeof(struct fb);
+	get_header()->first->isFree = 1;
 
 	/* On vérifie qu'on a bien enregistré les infos et qu'on
 	 * sera capable de les récupérer par la suite
@@ -92,15 +96,11 @@ void mem_init(void* mem, size_t taille)
 }
 
 void mem_show(void (*print)(void *, size_t, int)) {
-	void* currentAddr = get_head();
-	struct fb* block = currentAddr;
-	struct fb* freeb = get_head();
-	while (currentAddr < (void*)(get_head() + get_header()->memory_size)) {
-		print(block, block->size, freeb == currentAddr);
-		if(hasNext(freeb))
-			if (freeb == currentAddr)
-				freeb = getNext(freeb);
-		currentAddr += block->size + sizeof(struct fb);
+	struct fb* bloc = get_head();
+	while ((void*)bloc < get_system_memory_addr() + get_system_memory_size())
+	{
+		print(bloc, bloc->size, bloc->isFree);
+		bloc += sizeof(struct fb) + bloc->size;
 	}
 }
 
@@ -111,25 +111,20 @@ void mem_fit(mem_fit_function_t *f) {
 void *mem_alloc(size_t taille) {
 
 	__attribute__((unused)) /* juste pour que gcc compile ce squelette avec -Werror */
+
 	struct fb* fb = get_header()->fit(get_head(), taille);
+	if (fb == NULL) return NULL;
 	fb->size = taille;
-	fb->next = fb + taille + sizeof(struct fb);
+	fb->isFree = 0;
+	fb->next = NULL;
 	return fb + sizeof(struct fb);
 }
 
 
-// struct fb* findPrevFb(void* mem)
-// {
-// 	struct fb* searchedBloc = mem;
-// 	struct fb* block = get_head();
-// 	struct fb* lastfb;
-// 	while (hasNext(block) && getNext(block) != )
-// 	{
-// 		block = getNext(block);
-// 		if block->
-// 	}
+struct fb* findPrevFb(void* mem)
+{
 	
-// }
+}
 
 void mem_free(void* mem) {
 	// struct fb* list = get_head();
