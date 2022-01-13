@@ -73,7 +73,6 @@ struct fb* getNext(struct fb* block)
 
 void mem_init(void* mem, size_t taille)
 {
-
 	memory_addr = mem;
 	*(size_t*)memory_addr = taille;
 
@@ -82,11 +81,12 @@ void mem_init(void* mem, size_t taille)
 
 	get_header()->memory_size = taille;
 	
-
+	struct fb* firstb = get_head();
+	firstb->isFree = 1;
+	firstb->size = taille - sizeof(struct allocator_header) - sizeof(struct fb);
+	firstb->next = NULL;
 	//Création d'un unique bloc de mémoire libre contenant toute la mémoire disponible
-	get_header()->first->next = NULL;
-	get_header()->first->size = taille - sizeof(struct allocator_header) - sizeof(struct fb);
-	get_header()->first->isFree = 1;
+	get_header()->first = firstb;
 
 	/* On vérifie qu'on a bien enregistré les infos et qu'on
 	 * sera capable de les récupérer par la suite
@@ -133,7 +133,6 @@ void *mem_alloc(size_t taille) {
 		fb->size = ttaille;
 		fb->isFree = 0;
 		fb->next = NULL;
-
 
 	return fb + sizeof(struct fb);
 }
