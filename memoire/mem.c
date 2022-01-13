@@ -108,23 +108,41 @@ void mem_fit(mem_fit_function_t *f) {
 	get_header()->fit = f;
 }
 
+
+size_t Taille(size_t taille)
+{
+	return taille;
+}
+
 void *mem_alloc(size_t taille) {
+	size_t ttaille = Taille(taille);
 
 	__attribute__((unused)) /* juste pour que gcc compile ce squelette avec -Werror */
-
-	struct fb* fb = get_header()->fit(get_head(), taille);
+	struct fb* fb = get_header()->fit(get_head(), ttaille);
 	if (fb == NULL) return NULL;
-	fb->size = taille;
-	fb->isFree = 0;
-	fb->next = NULL;
+
+
+	if (ttaille != fb->size)
+	{
+		struct fb* newBloc = fb + sizeof(fb) + ttaille;
+		newBloc->isFree = 1;
+		newBloc->next = NULL;
+		newBloc->size =  fb->size - ttaille - sizeof(fb);
+	}
+	
+		fb->size = ttaille;
+		fb->isFree = 0;
+		fb->next = NULL;
+
+
 	return fb + sizeof(struct fb);
 }
 
 
-struct fb* findPrevFb(void* mem)
-{
+// struct fb* findPrevFb(void* mem)
+// {
 	
-}
+// }
 
 void mem_free(void* mem) {
 	// struct fb* list = get_head();
@@ -180,3 +198,4 @@ struct fb* mem_fit_best(struct fb *list, size_t size) {
 struct fb* mem_fit_worst(struct fb *list, size_t size) {
 	return NULL;
 }
+
