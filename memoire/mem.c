@@ -99,8 +99,9 @@ void mem_show(void (*print)(void *, size_t, int)) {
 	struct fb* bloc = get_head();
 	while ((void*)bloc < get_system_memory_addr() + get_system_memory_size())
 	{
+
 		print(bloc, bloc->size, bloc->isFree);
-		bloc += sizeof(struct fb) + bloc->size;
+		bloc = (void*)bloc + sizeof(struct fb) + bloc->size;
 	}
 }
 
@@ -114,25 +115,25 @@ size_t Taille(size_t taille)
 	return taille;
 }
 
-void *mem_alloc(size_t taille) {
+void* mem_alloc(size_t taille) {
 	size_t ttaille = Taille(taille);
 
 	__attribute__((unused)) /* juste pour que gcc compile ce squelette avec -Werror */
-	struct fb* fb = get_header()->fit(get_head(), ttaille);
+	struct fb* fb = get_header()->fit(get_header()->first, ttaille);
 	if (fb == NULL) return NULL;
 
 
 	if (ttaille != fb->size)
 	{
-		struct fb* newBloc = fb + sizeof(fb) + ttaille;
+		struct fb* newBloc = (void*)fb + sizeof(struct fb) + ttaille;
 		newBloc->isFree = 1;
 		newBloc->next = NULL;
-		newBloc->size =  fb->size - ttaille - sizeof(fb);
+		newBloc->size =  fb->size - ttaille - sizeof(struct fb);
 	}
-	
-		fb->size = ttaille;
-		fb->isFree = 0;
-		fb->next = NULL;
+
+	fb->size = ttaille;
+	fb->isFree = 0;
+	fb->next = NULL;
 
 	return fb + sizeof(struct fb);
 }
