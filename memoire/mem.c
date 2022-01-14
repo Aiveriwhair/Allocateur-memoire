@@ -15,6 +15,7 @@
 #define ALIGNMENT 16ss
 #endif
 
+
 /* structure placée au début de la zone de l'allocateur
 
    Elle contient toutes les variables globales nécessaires au
@@ -128,6 +129,10 @@ void* mem_alloc(size_t taille) {
 		newBloc->isFree = 1;
 		newBloc->next = NULL;
 		newBloc->size =  fb->size - ttaille - sizeof(struct fb);
+		if (fb == get_header()->first)
+		{
+			get_header()->first = newBloc;
+		}
 	}
 
 	fb->size = ttaille;
@@ -137,18 +142,56 @@ void* mem_alloc(size_t taille) {
 	return fb + sizeof(struct fb);
 }
 
+struct fb* findPrevFb(void* mem)
+{
+	struct fb* bloc = get_header()->first;
+	if (bloc == mem){
+		return NULL;
+	}
+	while (bloc->next < (struct fb*)mem){
+		bloc = getNext(bloc);
+	}
+	return bloc;
 
-// struct fb* findPrevFb(void* mem)
-// {
-	
-// }
+}
+
+void FusionFB(struct fb* newBloc)
+{
+	if (newBloc == NULL) return;
+
+	struct fb* prev = findPrevFb(newBloc);
+	if( prev + prev->size + sizeof(struct fb)  == newBloc){
+		prev->next = newBloc->next;
+		prev->size += sizeof(struct fb) + newBloc->size;		
+	}
+	FusionFB(prev->next);
+}
+
+int isFree(struct fb* bloc)
+{
+
+	if (bloc == get_header()->first)
+		return 1;
+
+	if(findPrevFb(bloc) == NULL)
+		return 0;
+	return 1;
+}
+
 
 void mem_free(void* mem) {
-	// struct fb* list = get_head();
-	// struct fb* lastfb = findPrevFb(mem);
-	// 	if(hasNext(freeb))
-	// 		if (freeb == currentAddr)
-	// 			freeb = getNext(freeb);
+	struct fb* bloc = mem;
+
+	if (isFree(bloc))
+	{
+		return;
+	}
+	
+	bloc->isFree = 1;
+	bloc->next = findPrevFb(bloc)->next;
+	findPrevFb(bloc)->next = bloc;
+	FusionFB(bloc);
+
 }
 
 
