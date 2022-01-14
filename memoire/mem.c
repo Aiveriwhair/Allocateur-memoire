@@ -155,19 +155,21 @@ void mem_free(void* mem) {
 struct fb* mem_fit_first(struct fb *list, size_t size) {
 	
 	struct fb* block = list;
-	do
+	while (1)
 	{
 		if (block->size >= size + sizeof(struct fb))
 		{
 			return block;
 		}
-		if (hasNext(block))
+		if(hasNext(block))
 		{
 			block = getNext(block);
 		}
-
-	} while (block->next != NULL);
-
+		if (block->next == NULL)
+		{
+			break;
+		}
+	}
 	return NULL;
 }
 
