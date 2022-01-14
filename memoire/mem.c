@@ -176,9 +176,9 @@ int isFree(struct fb* bloc)
 	if (bloc == get_header()->first)
 		return 1;
 
-	if(findPrevFb(bloc) == NULL)
-		return 0;
-	return 1;
+	if(findPrevFb(bloc)->next == bloc)
+		return 1;
+	return 0;
 }
 
 
@@ -194,7 +194,6 @@ void mem_free(void* mem) {
 	bloc->next = findPrevFb(bloc)->next;
 	findPrevFb(bloc)->next = bloc;
 	FusionFB(bloc);
-
 }
 
 
