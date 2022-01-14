@@ -129,7 +129,7 @@ void* mem_alloc(size_t taille) {
 		newBloc->next = NULL;
 		newBloc->size =  fb->size - ttaille - sizeof(struct fb);
 	}
-	
+
 	fb->size = ttaille;
 	fb->isFree = 0;
 	fb->next = NULL;
@@ -166,7 +166,7 @@ struct fb* mem_fit_first(struct fb *list, size_t size) {
 			block = getNext(block);
 		}
 
-	} while (block != NULL);
+	} while (block->next != NULL);
 
 	return NULL;
 }
