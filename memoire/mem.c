@@ -118,10 +118,9 @@ size_t Taille(size_t taille)
 void* mem_alloc(size_t taille) {
 	size_t ttaille = Taille(taille);
 
-	__attribute__((unused)) /* juste pour que gcc compile ce squelette avec -Werror */
+	// __attribute__((unused)) /* juste pour que gcc compile ce squelette avec -Werror */
 	struct fb* fb = get_header()->fit(get_header()->first, ttaille);
 	if (fb == NULL) return NULL;
-
 
 	if (ttaille != fb->size)
 	{
@@ -130,7 +129,7 @@ void* mem_alloc(size_t taille) {
 		newBloc->next = NULL;
 		newBloc->size =  fb->size - ttaille - sizeof(struct fb);
 	}
-
+	
 	fb->size = ttaille;
 	fb->isFree = 0;
 	fb->next = NULL;
