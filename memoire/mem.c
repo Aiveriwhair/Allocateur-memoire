@@ -148,8 +148,11 @@ struct fb* findPrevFb(void* mem)
 	if (bloc == mem){
 		return NULL;
 	}
-	while (bloc->next < (struct fb*)mem){
+	
+	while ((void*)bloc->next < (void*)mem){
+		if (bloc->next == NULL) break;
 		bloc = getNext(bloc);
+		
 	}
 	return bloc;
 
