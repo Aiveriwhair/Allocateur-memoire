@@ -180,6 +180,7 @@ int isFree(struct fb* bloc)
 	if (bloc == get_header()->first)
 		return 1;
 
+
 	if(findPrevFb(bloc)->next == bloc)
 		return 1;
 	return 0;
@@ -189,7 +190,7 @@ int isFree(struct fb* bloc)
 void mem_free(void* mem) {
 	struct fb* bloc = mem;
 
-	if (isFree(bloc))
+	if (bloc->isFree)
 	{
 		return;
 	}
