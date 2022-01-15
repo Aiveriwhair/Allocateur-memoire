@@ -142,8 +142,9 @@ void* mem_alloc(size_t taille) {
 	return fb + sizeof(struct fb);
 }
 
+
 struct fb* findPrevFb(void* mem)
-{
+{ 
 	struct fb* bloc = get_header()->first;
 	if (bloc == mem){
 		return NULL;
@@ -152,10 +153,13 @@ struct fb* findPrevFb(void* mem)
 	while ((void*)bloc->next < (void*)mem){
 		if (bloc->next == NULL) break;
 		bloc = getNext(bloc);
-		
 	}
+	if ((void*)bloc > (void*)mem)
+	{
+		return NULL;
+	}
+	
 	return bloc;
-
 }
 
 void FusionFB(struct fb* newBloc)
@@ -191,6 +195,12 @@ void mem_free(void* mem) {
 	}
 	
 	bloc->isFree = 1;
+	if (findPrevFb(bloc) == NULL)
+	{
+		bloc->next = get_header()->first;
+		get_header()->first = bloc;
+	}
+	
 	bloc->next = findPrevFb(bloc)->next;
 	findPrevFb(bloc)->next = bloc;
 	FusionFB(bloc);
@@ -247,4 +257,3 @@ struct fb* mem_fit_worst(struct fb *list, size_t size) {
 
 
 
-//Léa est la plus gentille
