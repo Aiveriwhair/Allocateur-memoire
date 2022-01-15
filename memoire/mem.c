@@ -245,3 +245,6 @@ struct fb* mem_fit_worst(struct fb *list, size_t size) {
 	return NULL;
 }
 
+
+
+//Léa est la plus gentille
