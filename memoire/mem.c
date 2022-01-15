@@ -113,7 +113,7 @@ void mem_fit(mem_fit_function_t *f) {
 
 size_t Taille(size_t taille)
 {
-	return taille;
+	return taille + (ALIGNMENT - 1)&~(ALIGNMENT - 1);
 }
 
 void* mem_alloc(size_t taille) {
@@ -258,4 +258,6 @@ struct fb* mem_fit_worst(struct fb *list, size_t size) {
 }
 
 
+
+//Tests
 
