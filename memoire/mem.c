@@ -152,7 +152,7 @@ struct fb* findPrevFb(void* mem)
 	}
 	
 	while (hasNext(bloc)) {
-		if ((void*)bloc->next > (void*)mem)
+		if ((void*)bloc->next >= (void*)mem)
 		{
 			return bloc;
 		}
@@ -167,7 +167,7 @@ void FusionFB(struct fb* newBloc)
 {
 	if (newBloc == NULL) return;
 
-	struct fb* prev = findPrevFb(newBloc);
+	struct fb* prev = findPrevFb((void*)newBloc);
 	if (prev == NULL) return;
 
 	if( prev + prev->size + sizeof(struct fb) == newBloc){
