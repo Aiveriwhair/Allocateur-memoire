@@ -142,8 +142,6 @@ void* mem_alloc(size_t taille) {
 	return fb + sizeof(struct fb);
 }
 
-// 		# 0 # 0
-
 struct fb* findPrevFb(void* mem)
 { 
 	struct fb* bloc = get_header()->first;
@@ -163,13 +161,16 @@ struct fb* findPrevFb(void* mem)
 	return bloc;
 }
 
+// 			O # O
 
 void FusionFB(struct fb* newBloc)
 {
 	if (newBloc == NULL) return;
 
 	struct fb* prev = findPrevFb(newBloc);
-	if( prev + prev->size + sizeof(struct fb)  == newBloc){
+	if (prev == NULL) return;
+
+	if( prev + prev->size + sizeof(struct fb) == newBloc){
 		prev->next = newBloc->next;
 		prev->size += sizeof(struct fb) + newBloc->size;		
 	}
@@ -204,7 +205,7 @@ void mem_free(void* mem) {
 		bloc->next = findPrevFb(bloc)->next;
 		findPrevFb(bloc)->next = bloc;
 	}
-	
+
 	FusionFB(bloc);
 	FusionFB(bloc->next);
 }
