@@ -205,8 +205,8 @@ void mem_free(void* mem) {
 		findPrevFb(bloc)->next = bloc;
 	}
 	
-	FusionFB(bloc);
-	FusionFB(bloc->next);
+	/*FusionFB(bloc);
+	FusionFB(bloc->next);*/
 }
 
 
