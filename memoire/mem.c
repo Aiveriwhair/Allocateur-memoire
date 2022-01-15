@@ -142,25 +142,27 @@ void* mem_alloc(size_t taille) {
 	return fb + sizeof(struct fb);
 }
 
+// 		# 0 # 0
 
 struct fb* findPrevFb(void* mem)
 { 
 	struct fb* bloc = get_header()->first;
-	if (bloc == mem){
-		return NULL;
-	}
-	
-	while ((void*)bloc->next < (void*)mem){
-		if (bloc->next == NULL) break;
-		bloc = getNext(bloc);
-	}
-	if ((void*)bloc > (void*)mem)
+
+	if ((void*)bloc >= (void*)mem)
 	{
 		return NULL;
 	}
 	
+	while (hasNext(bloc)) {
+		if ((void*)bloc->next > (void*)mem)
+		{
+			return bloc;
+		}
+		bloc = getNext(bloc);
+	}
 	return bloc;
 }
+
 
 void FusionFB(struct fb* newBloc)
 {
@@ -171,12 +173,10 @@ void FusionFB(struct fb* newBloc)
 		prev->next = newBloc->next;
 		prev->size += sizeof(struct fb) + newBloc->size;		
 	}
-	FusionFB(prev->next);
 }
 
 int isFree(struct fb* bloc)
 {
-
 	if (bloc == get_header()->first)
 		return 1;
 
@@ -187,13 +187,11 @@ int isFree(struct fb* bloc)
 }
 
 
+
 void mem_free(void* mem) {
 	struct fb* bloc = mem;
 
-	if (bloc->isFree)
-	{
-		return;
-	}
+	if (bloc->isFree) return;
 	
 	bloc->isFree = 1;
 	if (findPrevFb(bloc) == NULL)
@@ -201,10 +199,14 @@ void mem_free(void* mem) {
 		bloc->next = get_header()->first;
 		get_header()->first = bloc;
 	}
+	else
+	{
+		bloc->next = findPrevFb(bloc)->next;
+		findPrevFb(bloc)->next = bloc;
+	}
 	
-	bloc->next = findPrevFb(bloc)->next;
-	findPrevFb(bloc)->next = bloc;
 	FusionFB(bloc);
+	FusionFB(bloc->next);
 }
 
 
